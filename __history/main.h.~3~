@@ -1,0 +1,22 @@
+//---------------------------------------------------------------------------
+
+#ifndef mainH
+#define mainH
+//---------------------------------------------------------------------------
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+//---------------------------------------------------------------------------
+class TForm1 : public TForm
+{
+__published:	// IDE で管理されるコン??ネント
+	TButton *Button1;
+private:	// ユ?ザ?宣言
+public:		// ユ?ザ?宣言
+	__fastcall TForm1(TComponent* Owner);
+};
+//---------------------------------------------------------------------------
+extern PACKAGE TForm1 *Form1;
+//---------------------------------------------------------------------------
+#endif
