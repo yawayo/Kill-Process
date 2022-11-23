@@ -3,12 +3,13 @@
 	<Transactions>
     <Transaction>1899-12-30 00:00:00.000.441,=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\Unit1.cpp</Transaction>
     <Transaction>1899-12-30 00:00:00.000.983,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\Unit1.cpp=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\main.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.109,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\KillProcess_wy.cbproj=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\Project1.cbproj</Transaction>
     <Transaction>1899-12-30 00:00:00.000.983,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\Unit1.h=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\main.h</Transaction>
     <Transaction>1899-12-30 00:00:00.000.983,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\Unit1.dfm=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\main.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.045,=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcess_wy\ThreadClass.cpp</Transaction>
     <Transaction>1899-12-30 00:00:00.000.332,=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\Project1PCH1.h</Transaction>
     <Transaction>1899-12-30 00:00:00.000.511,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\Project1PCH1.h=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\Project1PCH1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.094,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\KillProcess_wyPCH1.h=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\Project1PCH1.h</Transaction>
     <Transaction>1899-12-30 00:00:00.000.532,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\Project1.cbproj=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\Project1.cbproj</Transaction>
-    <Transaction>2022-11-22 10:53:09.094,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\KillProcess_wyPCH1.h=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\Project1PCH1.h</Transaction>
-    <Transaction>2022-11-22 10:53:09.109,C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\KillProcess_wy.cbproj=C:\Users\iyaso\Documents\Embarcadero\Studio\Projects\KillProcessTest\Project1.cbproj</Transaction>
   </Transactions>
 </BorlandProject>

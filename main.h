@@ -7,21 +7,60 @@
 #include <Vcl.Controls.hpp>
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
+#include <Vcl.ExtCtrls.hpp>
 
-#include<tlhelp32.h>
+#include <tlhelp32.h>
+#include <windows.h>
+
+#include <inifiles.hpp>
+
+#include <ThreadClass.h>
 //---------------------------------------------------------------------------
-class TForm1 : public TForm
+class TMainForm : public TForm
 {
 __published:
+	TLabel *Label1;
+	TLabel *Check_Cycle_label;
+	TLabel *Label3;
+	TLabel *Process_Path_label;
+	TLabel *Label5;
+	TLabel *Wait_Timeout_label;
+	TLabel *Status_label;
+	TLabel *Label8;
+	TLabel *Label9;
+	TLabel *Process_Name_label;
+	TLabel *Label2;
+	TLabel *Label4;
+	TLabel *Label6;
+	TLabel *Label7;
+	TLabel *Label10;
+	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
 private:
 public:
-	__fastcall TForm1(TComponent* Owner);
+	__fastcall TMainForm(TComponent* Owner);
 
+	AnsiString rootPath = "";
 
-	// Console
-	HANDLE handle;
+	void InitializeValue();
+	UnicodeString __fastcall GetIniFile(const System::UnicodeString Section, const System::UnicodeString Ident,
+		const System::UnicodeString Default, AnsiString path);
+	void LoadIniFile(AnsiString path);
+
+    bool do_check = false;
+	ThreadClass check_thread;
+	static void WINAPI CallCheckThreadFunc(LPVOID IpParam);
+	void __fastcall Check_Func();
+    DWORD GetProcessID(UnicodeString ProcessName);
+	HWND GetWinHandle(ULONG pid);
+	ULONG ProcIDFromWnd(HWND hwnd);
+	void __fastcall SafeCreateProcess(char *ProcessName);
+
+	AnsiString Process_path;
+	AnsiString Process_name;
+	int check_cycle;
+    int wait_time;
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TForm1 *Form1;
+extern PACKAGE TMainForm *MainForm;
 //---------------------------------------------------------------------------
 #endif

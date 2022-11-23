@@ -7,66 +7,175 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TForm1 *Form1;
+TMainForm *MainForm;
 //---------------------------------------------------------------------------
-__fastcall TForm1::TForm1(TComponent* Owner)
+__fastcall TMainForm::TMainForm(TComponent* Owner)
 	: TForm(Owner)
 {
+	InitializeValue();
 
-/*Test*/	if (!handle)
-/*Test*/	{
-/*Test*/		AllocConsole();
-/*Test*/		handle = GetStdHandle(STD_OUTPUT_HANDLE);
-/*Test*/	}
+	do_check = true;
+	check_thread.start_thread((PTHREAD_START)TMainForm::CallCheckThreadFunc, (void*)this);
 
-	const wchar_t *strExeName = L"Project1.exe"; //모니터링 하고자 하는 실행파일 이름
+	this->Caption = "Watchdog";
+	this->Top = 0;
+	this->Left = Screen->Width - this->Width;
+}
+//---------------------------------------------------------------------------
+void TMainForm::InitializeValue()
+{
+    rootPath = ExtractFilePath(ParamStr(0));
+	LoadIniFile(rootPath + "Setting_Parameters.ini");
 
-	HANDLE hSnapShot;
-	while(1)
+	Process_Path_label->Caption = Process_path;
+	Process_Name_label->Caption = Process_name;
+	Check_Cycle_label->Caption = check_cycle;
+	Wait_Timeout_label->Caption = wait_time;
+	Status_label->Font->Color = (TColor)RGB(255, 0, 0); Status_label->Font->Size = 20; Status_label->Caption = "Not Running";
+}
+UnicodeString __fastcall TMainForm::GetIniFile(const System::UnicodeString Section, const System::UnicodeString Ident,
+	const System::UnicodeString Default, AnsiString path)
+{
+	TIniFile* mIniFile;
+	UnicodeString sMsg;
+
+	try
 	{
-		hSnapShot=CreateToolhelp32Snapshot (TH32CS_SNAPALL,NULL); //특정 프로세스(힙,프로세스,모듈,쓰레드 포함) 에 대한 스냅샷 정보를 얻어온다.
-		PROCESSENTRY32 pEntry;
-		pEntry.dwSize =sizeof(pEntry);
+		mIniFile = new TIniFile(path);
+		sMsg = mIniFile->ReadString(Section, Ident, Default);
+	}
 
-		if(Process32First (hSnapShot,&pEntry))
+	catch (...)
+	{
+		//
+	}
+
+	delete mIniFile;
+
+	return sMsg;
+}
+void TMainForm::LoadIniFile(AnsiString path)
+{
+	AnsiString s;
+
+	Process_path = GetIniFile("Parameters", "Process_path", "C:/Users/iyaso/Documents/Embarcadero/Studio/Projects/forKillProcessTest/Win32/Debug/", path);
+
+	Process_name = GetIniFile("Parameters", "Process_name", "Project1.exe", path);
+
+	s = GetIniFile("Parameters", "check_cycle", "1000", path); check_cycle = StrToInt(s);
+
+	s = GetIniFile("Parameters", "wait_time", "1000", path); wait_time = StrToInt(s);
+}
+//---------------------------------------------------------------------------
+void WINAPI TMainForm::CallCheckThreadFunc(LPVOID IpParam)
+{
+	TMainForm* dialog = (TMainForm*)IpParam;
+	dialog->Check_Func();
+}
+void __fastcall TMainForm::Check_Func()
+{
+	while(do_check)
+	{
+		DWORD PID = GetProcessID(Process_name);
+		if(PID != -1)
+		{
+			DWORD dw = 0;
+			HWND hProcess = GetWinHandle(PID);
+			if (SendMessageTimeout(hProcess,NULL,NULL,NULL,SMTO_NORMAL,wait_time,&dw))
+			{
+				Status_label->Font->Color = (TColor)RGB(0, 255, 0); Status_label->Font->Size = 20; Status_label->Caption = "Running";
+				continue;
+			}
+			else
+			{
+				Status_label->Font->Color = (TColor)RGB(255, 0, 0); Status_label->Font->Size = 20; Status_label->Caption = "Not Running";
+				DWORD pid, tid;
+				HANDLE hnd;
+
+				tid = ::GetWindowThreadProcessId(hProcess, &pid);
+				hnd = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+				::TerminateProcess(hnd,0);
+				::CloseHandle(hnd);
+			}
+		}
+		else
+		{
+			Status_label->Font->Color = (TColor)RGB(255, 0, 0); Status_label->Font->Size = 20; Status_label->Caption = "Not Running";
+			SafeCreateProcess((Process_path + Process_name).c_str());
+        }
+		Sleep(check_cycle);
+	}
+}
+//---------------------------------------------------------------------------
+DWORD TMainForm::GetProcessID(UnicodeString ProcessName)
+{
+	bool find = false;
+
+	DWORD dwPID = 0;
+	HANDLE hProcess = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+	if (hProcess != NULL)
+	{
+		PROCESSENTRY32 pe32;
+		pe32.dwSize = sizeof(PROCESSENTRY32);
+
+		if (Process32First(hProcess, &pe32))
 		{
 			do
 			{
-//				String text = String(pEntry.szExeFile) + "\n";
-//				WriteConsole(handle, text.c_str(), text.Length(), 0, 0);
-
-				if((_wcsicmp(pEntry.szExeFile, strExeName) == 0 ) &&  pEntry.cntThreads >= 1)
+				if (UnicodeString(pe32.szExeFile) == ProcessName)
 				{
-					DWORD dw = 0;
-
-					HWND HWnd = ::FindWindow(NULL,_T("Form1")); //캡션명이 test 인 윈도우 핸들을 얻어온다
-					DWORD pid, tid;
-					HANDLE hnd;
-
-					//10초안에 응답이 있는지를 판단해 본다.
-					if (SendMessageTimeout(HWnd,NULL,NULL,NULL,SMTO_NORMAL,3000,&dw))
-					{
-						continue; //정상적으로 응답이 있는 경우
-					}
-					else
-					{
-						TCHAR* szErrMsg = NULL;
-						FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
-						NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPTSTR)&szErrMsg, 0, NULL); //발생한 에러 정보를 얻어온다.
-						LocalFree(szErrMsg);
-
-						tid = ::GetWindowThreadProcessId(HWnd, &pid);
-						hnd = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-						::TerminateProcess(hnd,0); //해당 프로세스를 강제로 종료해 버린다.
-						::CloseHandle(hnd);
-
-						break;
-					}
+                    find = true;
+					dwPID = pe32.th32ProcessID;
+					break;
 				}
 			}
-			while(Process32Next(hSnapShot,&pEntry));
+			while (Process32Next(hProcess, &pe32));
 		}
+		CloseHandle(hProcess);
 	}
-	CloseHandle (hSnapShot);
+
+	if(find)
+		return dwPID;
+	else
+        return -1;
+}
+HWND TMainForm::GetWinHandle(ULONG pid)
+{
+	HWND tempHwnd = FindWindow(NULL, NULL);
+
+	while (tempHwnd != NULL)
+	{
+		if (GetParent(tempHwnd) == NULL)
+			if (pid == ProcIDFromWnd(tempHwnd))
+				return tempHwnd;
+		tempHwnd = GetWindow(tempHwnd, GW_HWNDNEXT);
+	}
+	return NULL;
+}
+ULONG TMainForm::ProcIDFromWnd(HWND hwnd)
+{
+	ULONG idProc;
+	GetWindowThreadProcessId(hwnd, &idProc);
+	return idProc;
 }
 //---------------------------------------------------------------------------
+void __fastcall TMainForm::SafeCreateProcess(char *ProcessName)
+{
+	STARTUPINFOA si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(si));
+	ZeroMemory(&pi, sizeof(pi));
+	si.cb = sizeof(si);
+
+	CreateProcessA(ProcessName, ProcessName, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+}
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::FormCloseQuery(TObject *Sender, bool &CanClose)
+{
+    do_check = false;
+}
+//---------------------------------------------------------------------------
+
+
+
